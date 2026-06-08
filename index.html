@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM - Sistema Integrado de Manutenção</title>
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --secondary-color: #2563eb;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            
+            /* Cores dos Status - Preenchimento Total */
+            --color-ok: #16a34a; /* Verde */
+            --color-anomalia: #dc2626; /* Vermelho */
+            --color-na: #4b5563; /* Cinza */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Cabeçalho */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 26px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Dados Iniciais */
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .form-group input:readonly {
+            background: #e2e8f0;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* Grupos do Checklist */
+        .group-section {
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        .group-title {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 14px 18px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .checklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fff;
+            transition: background-color 0.2s;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .item-text {
+            font-size: 14px;
+            font-weight: 500;
+            padding-right: 15px;
+            flex: 1;
+            color: var(--text-color);
+        }
+
+        /* Opções de Seleção - ESTILO BOTOES PREENCHIDOS */
+        .options-group {
+            display: flex;
+            gap: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .radio-label {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-right: 1px solid var(--border-color);
+            background-color: #fff;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            user-select: none;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .radio-label:last-child {
+            border-right: none;
+        }
+
+        .radio-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* --- ESTILOS DE ESTADO SELECIONADO (PREENCHIMENTO TOTAL) --- */
+
+        /* OK (Verde) */
+        .radio-label-ok:hover {
+            background-color: #f0fdf4;
+        }
+        .radio-label-ok:has(input:checked) {
+            background-color: var(--color-ok);
+            color: white;
+            border-color: var(--color-ok);
+        }
+
+        /* ANOMALIA (Vermelho) */
+        .radio-label-anomalia:hover {
+            background-color: #fef2f2;
+        }
+        .radio-label-anomalia:has(input:checked) {
+            background-color: var(--color-anomalia);
+            color: white;
+            border-color: var(--color-anomalia);
+        }
+
+        /* N/A (Cinza) */
+        .radio-label-na:hover {
+            background-color: #f1f5f9;
+        }
+        .radio-label-na:has(input:checked) {
+            background-color: var(--color-na);
+            color: white;
+            border-color: var(--color-na);
+        }
+
+        /* Observações e Botão Enviar */
+        .obs-section {
+            margin-top: 25px;
+        }
+
+        .obs-section label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .obs-section textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .obs-section textarea:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: var(--secondary-color);
+            color: #fff;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        /* Responsividade */
+        @media (max-width: 650px) {
+            .checklist-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .options-group {
+                width: 100%;
+            }
+            .radio-label {
+                padding: 12px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>SIM</h1>
+        <p>Sistema Integrado de Manutenção</p>
+    </header>
+
+    <form id="checklistForm">
+        <div class="grid-inputs">
+            <div class="form-group">
+                <label for="dataHora">Data e Hora</label>
+                <input type="text" id="dataHora" readonly>
+            </div>
+            <div class="form-group">
+                <label for="responsavel">Responsável pelo Checklist</label>
+                <input type="text" id="responsavel" required placeholder="Nome completo">
+            </div>
+            <div class="form-group">
+                <label for="tipoVeiculo">Tipo de Veículo</label>
+                <select id="tipoVeiculo" required>
+                    <option value="" disabled selected>Selecione...</option>
+                    <option value="Moto">Moto</option>
+                    <option value="Carro">Carro</option>
+                    <option value="Pick-up">Pick-up</option>
+                    <option value="Van">Van</option>
+                    <option value="Micro-Ônibus">Micro-Ônibus</option>
+                    <option value="Ônibus">Ônibus</option>
+                    <option value="Caminhão">Caminhão</option>
+                    <option value="Cavalo Mecânico">Cavalo Mecânico</option>
+                    <option value="Trator">Trator</option>
+                    <option value="Máquina">Máquina</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="placa">Placa do Veículo</label>
+                <input type="text" id="placa" required placeholder="ABC-1234">
+            </div>
+            <div class="form-group">
+                <label for="km">KM Atual</label>
+                <input type="number" id="km" required placeholder="000000">
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 1: Segurança e Equipamentos Obrigatórios</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Cinto de segurança (travamento e conservação)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_cinto" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_cinto" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_cinto" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Triângulo de sinalização e chave de roda</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_triangulo" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_triangulo" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_triangulo" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Extintor de incêndio (dentro da validade)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_extintor" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_extintor" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_extintor" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado dos espelhos retrovisores</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_retrovisores" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_retrovisores" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_retrovisores" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 2: Mecânica e Fluidos (Compartimento do Motor)</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Nível do óleo do motor</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_oleo" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_oleo" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_oleo" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Nível do fluido de freio</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_freio" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_freio" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_freio" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Nível do reservatório de água do radiador e limpador</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_agua" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_agua" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_agua" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Verificação de vazamentos visíveis (óleo, água ou combustível)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_vazamentos" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_vazamentos" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_vazamentos" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 3: Pneus e Rodagem</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Calibragem (incluindo o estepe)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_calibragem" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_calibragem" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_calibragem" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado geral da banda de rodagem e sulcos (TWI)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_twi" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_twi" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_twi" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Presença de bolhas, cortes ou desgaste irregular</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_desgaste" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_desgaste" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_desgaste" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado das rodas e aperto das porcas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_rodas" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_rodas" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_rodas" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 4: Parte Elétrica e Iluminação</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Faróis (alto, baixo) e lanternas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_farois" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_farois" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_farois" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Luzes de freio, ré e piscas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_luzes_freio" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_luzes_freio" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_luzes_freio" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Luz de placa e painel de instrumentos</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_painel" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_painel" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_painel" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Bateria (terminais limpos e sem oxidação)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_bateria" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_bateria" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_bateria" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Buzina</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_buzina" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_buzina" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_buzina" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 5: Carroceria</div>
+            <div class="checklist-item">
+                <div class="item-text">Estado geral da carroceria (lataria, portas e trincas)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g5_carroceria" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g5_carroceria" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g5_carroceria" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="group-section">
+            <div class="group-title">Grupo 6: Limpeza e Conservação</div>
+            <div class="checklist-item">
+                <div class="item-text">Estado de limpeza interno e externo do veículo</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g6_limpeza" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g6_limpeza" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g6_limpeza" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group obs-section">
+            <label for="observacoes">Observações e Anomalias Encontradas</label>
+            <textarea id="observacoes" placeholder="Caso tenha marcado 'Anomalia' em algum item, detalhe aqui..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Salvar Checklist</button>
+    </form>
+</div>
+
+<script>
+    // Função para preencher automaticamente a Data e Hora Atual
+    function atualizarDataHora() {
+        const agora = new Date();
+        const data = agora.toLocaleDateString('pt-BR');
+        const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('dataHora').value = `${data} - ${hora}`;
+    }
+
+    window.onload = atualizarDataHora;
+
+    // Lógica ao enviar o formulário
+    document.getElementById('checklistForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Checklist enviado com sucesso! Sistema SIM atualizado.');
+    });
+</script>
+
+</body>
+</html>
