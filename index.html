@@ -539,6 +539,7 @@
 </div>
 
 <script>
+<script>
     // Função para preencher automaticamente a Data e Hora Atual
     function atualizarDataHora() {
         const agora = new Date();
@@ -549,11 +550,79 @@
 
     window.onload = atualizarDataHora;
 
-    // Lógica ao enviar o formulário
+    // CONFIGURAÇÃO DO EMAILJS - TOTALMENTE CONFIGURADO
+    const EMAILJS_SERVICE_ID = "service_gcwiji6";
+    const EMAILJS_TEMPLATE_ID = "template_eyo76or";
+    const EMAILJS_PUBLIC_KEY = "RMe_RZEGLZvY-YNYb";
+
+    // Inicializa o SDK do EmailJS
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+    // Captura o envio do formulário
     document.getElementById('checklistForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        alert('Checklist enviado com sucesso! Sistema SIM atualizado.');
+
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        // Função auxiliar para pegar o valor marcado dos botões de rádio
+        function getRadioValue(name) {
+            const element = document.querySelector(`input[name="${name}"]:checked`);
+            return element ? element.value : "Não selecionado";
+        }
+
+        // Monta o objeto com as informações capturadas (iguais às chaves {{}} do seu template)
+        const dadosTemplate = {
+            data_hora: document.getElementById('dataHora').value,
+            responsavel: document.getElementById('responsavel').value,
+            tipo_veiculo: document.getElementById('tipoVeiculo').value,
+            placa: document.getElementById('placa').value,
+            km: document.getElementById('km').value,
+            
+            g1_cinto: getRadioValue('g1_cinto'),
+            g1_triangulo: getRadioValue('g1_triangulo'),
+            g1_extintor: getRadioValue('g1_extintor'),
+            g1_retrovisores: getRadioValue('g1_retrovisores'),
+            
+            g2_oleo: getRadioValue('g2_oleo'),
+            g2_freio: getRadioValue('g2_freio'),
+            g2_agua: getRadioValue('g2_agua'),
+            g2_vazamentos: getRadioValue('g2_vazamentos'),
+            
+            g3_calibragem: getRadioValue('g3_calibragem'),
+            g3_twi: getRadioValue('g3_twi'),
+            g3_desgaste: getRadioValue('g3_desgaste'),
+            g3_rodas: getRadioValue('g3_rodas'),
+            
+            g4_farois: getRadioValue('g4_farois'),
+            g4_luzes_freio: getRadioValue('g4_luzes_freio'),
+            g4_painel: getRadioValue('g4_painel'),
+            g4_bateria: getRadioValue('g4_bateria'),
+            g4_buzina: getRadioValue('g4_buzina'),
+            
+            g5_carroceria: getRadioValue('g5_carroceria'),
+            g6_limpeza: getRadioValue('g6_limpeza'),
+            
+            observacoes: document.getElementById('observacoes').value || "Nenhuma observação registrada."
+        };
+
+        // Envia através da API do EmailJS
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, dadosTemplate)
+            .then(function() {
+                alert('Checklist enviado com sucesso! Sistema SIM atualizado.');
+                document.getElementById('checklistForm').reset();
+                atualizarDataHora(); // Reinicia a hora para a próxima vistoria
+            }, function(error) {
+                alert('Ocorreu um erro ao enviar. Por favor, tente novamente.');
+                console.error('Erro EmailJS:', error);
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.innerText = "Salvar Checklist";
+            });
     });
+</script>
 </script>
 
 </body>
