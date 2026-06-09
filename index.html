@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM - Sistema Integrado de Manutenção</title>
+    <!-- Script Oficial do EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         :root {
             --primary-color: #0f172a;
@@ -152,7 +154,7 @@
             color: var(--text-color);
         }
 
-        /* Opções de Seleção - ESTILO BOTOES PREENCHIDOS */
+        /* Opções de Seleção */
         .options-group {
             display: flex;
             gap: 0;
@@ -191,104 +193,51 @@
             cursor: pointer;
         }
 
-        /* --- ESTILOS DE ESTADO SELECIONADO (PREENCHIMENTO TOTAL) --- */
-
-        /* OK (Verde) */
-        .radio-label-ok:hover {
-            background-color: #f0fdf4;
-        }
+        /* Cores nos estados Selecionados */
+        .radio-label-ok:hover { background-color: #f0fdf4; }
         .radio-label-ok:has(input:checked) {
             background-color: var(--color-ok);
             color: white;
             border-color: var(--color-ok);
         }
 
-        /* ANOMALIA (Vermelho) */
-        .radio-label-anomalia:hover {
-            background-color: #fef2f2;
-        }
+        .radio-label-anomalia:hover { background-color: #fef2f2; }
         .radio-label-anomalia:has(input:checked) {
             background-color: var(--color-anomalia);
             color: white;
             border-color: var(--color-anomalia);
         }
 
-        /* N/A (Cinza) */
-        .radio-label-na:hover {
-            background-color: #f1f5f9;
-        }
+        .radio-label-na:hover { background-color: #f1f5f9; }
         .radio-label-na:has(input:checked) {
             background-color: var(--color-na);
             color: white;
             border-color: var(--color-na);
         }
 
-        /* Observações e Botão Enviar */
-        .obs-section {
-            margin-top: 25px;
-        }
-
-        .obs-section label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-        }
-
+        /* Observações e Enviar */
+        .obs-section { margin-top: 25px; }
+        .obs-section label { font-weight: 600; margin-bottom: 8px; display: block; }
         .obs-section textarea {
-            width: 100%;
-            height: 120px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            resize: vertical;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .obs-section textarea:focus {
-            border-color: var(--secondary-color);
+            width: 100%; height: 120px; padding: 15px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            resize: vertical; font-size: 14px; outline: none;
         }
 
         .btn-submit {
-            display: block;
-            width: 100%;
-            background: var(--secondary-color);
-            color: #fff;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            margin-top: 25px;
-            transition: background 0.2s, transform 0.1s;
+            display: block; width: 100%; background: var(--secondary-color); color: #fff;
+            padding: 16px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; margin-top: 25px;
             box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
         }
-
-        .btn-submit:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-submit:active {
-            transform: translateY(1px);
-        }
+        .btn-submit:hover { background: #1d4ed8; }
+        .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
 
         /* Responsividade */
         @media (max-width: 650px) {
-            .checklist-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .options-group {
-                width: 100%;
-            }
-            .radio-label {
-                padding: 12px 10px;
-            }
+            .checklist-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .options-group { width: 100%; }
+            .radio-label { padding: 12px 10px; }
         }
     </style>
 </head>
@@ -301,6 +250,7 @@
     </header>
 
     <form id="checklistForm">
+        <!-- Dados Iniciais -->
         <div class="grid-inputs">
             <div class="form-group">
                 <label for="dataHora">Data e Hora</label>
@@ -336,6 +286,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 1 -->
         <div class="group-section">
             <div class="group-title">Grupo 1: Segurança e Equipamentos Obrigatórios</div>
             
@@ -376,6 +327,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 2 -->
         <div class="group-section">
             <div class="group-title">Grupo 2: Mecânica e Fluidos (Compartimento do Motor)</div>
             
@@ -416,6 +368,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 3 -->
         <div class="group-section">
             <div class="group-title">Grupo 3: Pneus e Rodagem</div>
             
@@ -456,6 +409,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 4 -->
         <div class="group-section">
             <div class="group-title">Grupo 4: Parte Elétrica e Iluminação</div>
             
@@ -505,6 +459,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 5 -->
         <div class="group-section">
             <div class="group-title">Grupo 5: Carroceria</div>
             <div class="checklist-item">
@@ -517,6 +472,7 @@
             </div>
         </div>
 
+        <!-- GRUPO 6 -->
         <div class="group-section">
             <div class="group-title">Grupo 6: Limpeza e Conservação</div>
             <div class="checklist-item">
@@ -529,50 +485,54 @@
             </div>
         </div>
 
+        <!-- Observações -->
         <div class="form-group obs-section">
             <label for="observacoes">Observações e Anomalias Encontradas</label>
             <textarea id="observacoes" placeholder="Caso tenha marcado 'Anomalia' em algum item, detalhe aqui..."></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Salvar Checklist</button>
+        <button type="submit" id="btnSubmit" class="btn-submit">Salvar Checklist</button>
     </form>
 </div>
 
-<script>
 <script>
     // Função para preencher automaticamente a Data e Hora Atual
     function atualizarDataHora() {
         const agora = new Date();
         const data = agora.toLocaleDateString('pt-BR');
         const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('dataHora').value = `${data} - ${hora}`;
+        const campoDataHora = document.getElementById('dataHora');
+        if (campoDataHora) {
+            campoDataHora.value = `${data} - ${hora}`;
+        }
     }
 
+    // Garante que a data/hora carrega assim que a página abre
     window.onload = atualizarDataHora;
 
-    // CONFIGURAÇÃO DO EMAILJS - TOTALMENTE CONFIGURADO
+    // CONFIGURAÇÃO DO EMAILJS - INTEGRADO
     const EMAILJS_SERVICE_ID = "service_gcwiji6";
     const EMAILJS_TEMPLATE_ID = "template_eyo76or";
     const EMAILJS_PUBLIC_KEY = "RMe_RZEGLZvY-YNYb";
 
-    // Inicializa o SDK do EmailJS
+    // Inicializa o EmailJS
     emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
-    // Captura o envio do formulário
+    // Captura o clique do botão de salvar
     document.getElementById('checklistForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+        e.preventDefault(); // Impede a página de recarregar sozinha e apagar os dados
 
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
         btn.innerText = "Enviando...";
 
-        // Função auxiliar para pegar o valor marcado dos botões de rádio
+        // Função para ler qual bolinha (radio) foi marcada com segurança
         function getRadioValue(name) {
             const element = document.querySelector(`input[name="${name}"]:checked`);
             return element ? element.value : "Não selecionado";
         }
 
-        // Monta o objeto com as informações capturadas (iguais às chaves {{}} do seu template)
+        // Junta todos os dados exatamente como estão no seu modelo do EmailJS
         const dadosTemplate = {
             data_hora: document.getElementById('dataHora').value,
             responsavel: document.getElementById('responsavel').value,
@@ -607,22 +567,21 @@
             observacoes: document.getElementById('observacoes').value || "Nenhuma observação registrada."
         };
 
-        // Envia através da API do EmailJS
+        // Dispara o e-mail usando o EmailJS
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, dadosTemplate)
             .then(function() {
                 alert('Checklist enviado com sucesso! Sistema SIM atualizado.');
-                document.getElementById('checklistForm').reset();
-                atualizarDataHora(); // Reinicia a hora para a próxima vistoria
+                document.getElementById('checklistForm').reset(); // Limpa para a próxima vistoria
+                atualizarDataHora(); // Gera uma nova hora automática
             }, function(error) {
-                alert('Ocorreu um erro ao enviar. Por favor, tente novamente.');
-                console.error('Erro EmailJS:', error);
+                alert('Ocorreu um erro ao enviar para o EmailJS. Verifique sua conexão ou limite de envios.');
+                console.error('Erro detalhado:', error);
             })
             .finally(function() {
                 btn.disabled = false;
                 btn.innerText = "Salvar Checklist";
             });
     });
-</script>
 </script>
 
 </body>
