@@ -6,6 +6,8 @@
     <title>SIM - Sistema Integrado de Manutenção</title>
     <!-- Script Oficial do EmailJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- Script Oficial do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #0f172a;
@@ -261,24 +263,14 @@
                 <input type="text" id="responsavel" required placeholder="Nome completo">
             </div>
             <div class="form-group">
-                <label for="tipoVeiculo">Tipo de Veículo</label>
-                <select id="tipoVeiculo" required>
-                    <option value="" disabled selected>Selecione...</option>
-                    <option value="Moto">Moto</option>
-                    <option value="Carro">Carro</option>
-                    <option value="Pick-up">Pick-up</option>
-                    <option value="Van">Van</option>
-                    <option value="Micro-Ônibus">Micro-Ônibus</option>
-                    <option value="Ônibus">Ônibus</option>
-                    <option value="Caminhão">Caminhão</option>
-                    <option value="Cavalo Mecânico">Cavalo Mecânico</option>
-                    <option value="Trator">Trator</option>
-                    <option value="Máquina">Máquina</option>
+                <label for="placa">Placa do Veículo</label>
+                <select id="placa" required onchange="vincularTipoVeiculo()">
+                    <option value="" disabled selected>Carregando placas...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="placa">Placa do Veículo</label>
-                <input type="text" id="placa" required placeholder="ABC-1234">
+                <label for="tipoVeiculo">Tipo de Veículo</label>
+                <input type="text" id="tipoVeiculo" readonly placeholder="Selecionado automaticamente">
             </div>
             <div class="form-group">
                 <label for="km">KM Atual</label>
@@ -496,6 +488,13 @@
 </div>
 
 <script>
+    // Configuração do Conector do Supabase (Fábio - Projeto SIM)
+    const SUPABASE_URL = "https://zsxjzmabzpjlzvqmpwzg.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeGp6bWFienBqbHp2cW1wd3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDYzMTEsImV4cCI6MjA5NjYyMjMxMX0.L3o-4gTWhClPyojC5lbLBY1A-pAl2VKeNxDe8C0y_9k";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let listaVeiculosGlobal = [];
+
     // Função para preencher automaticamente a Data e Hora Atual
     function atualizarDataHora() {
         const agora = new Date();
@@ -507,82 +506,157 @@
         }
     }
 
-    // Garante que a data/hora carrega assim que a página abre
-    window.onload = atualizarDataHora;
+    // Busca as placas cadastradas no Supabase assim que abre a tela
+    async function carregarPlacasDoBanco() {
+        try {
+            const { data, error } = await _supabase
+                .from('veiculos')
+                .select('placa, tipo_veiculo');
+            
+            if (error) throw error;
 
-    // CONFIGURAÇÃO DO EMAILJS - INTEGRADO
+            const selectPlaca = document.getElementById('placa');
+            selectPlaca.innerHTML = '<option value="" disabled selected>Selecione a Placa...</option>';
+
+            if (data && data.length > 0) {
+                listaVeiculosGlobal = data;
+                data.forEach(veiculo => {
+                    const opt = document.createElement('option');
+                    opt.value = veiculo.placa;
+                    opt.innerText = veiculo.placa;
+                    selectPlaca.appendChild(opt);
+                });
+            } else {
+                selectPlaca.innerHTML = '<option value="" disabled selected>Nenhum veículo cadastrado</option>';
+            }
+        } catch (err) {
+            console.error("Erro ao carregar placas:", err);
+            document.getElementById('placa').innerHTML = '<option value="" disabled selected>Erro ao carregar placas</option>';
+        }
+    }
+
+    // Preenche o campo Tipo de Veículo automaticamente ao mudar a placa
+    function vincularTipoVeiculo() {
+        const placaSelecionada = document.getElementById('placa').value;
+        const veiculoEncontrado = listaVeiculosGlobal.find(v => v.placa === placaSelecionada);
+        if (veiculoEncontrado) {
+            document.getElementById('tipoVeiculo').value = veiculoEncontrado.tipo_veiculo;
+        }
+    }
+
+    window.onload = function() {
+        atualizarDataHora();
+        carregarPlacasDoBanco();
+    };
+
+    // CONFIGURAÇÃO DO EMAILJS
     const EMAILJS_SERVICE_ID = "service_gcwiji6";
     const EMAILJS_TEMPLATE_ID = "template_eyo76or";
     const EMAILJS_PUBLIC_KEY = "RMe_RZEGLZvY-YNYb";
 
-    // Inicializa o EmailJS
     emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
     // Captura o clique do botão de salvar
-    document.getElementById('checklistForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // Impede a página de recarregar sozinha e apagar os dados
+    document.getElementById('checklistForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
         btn.innerText = "Enviando...";
 
-        // Função para ler qual bolinha (radio) foi marcada com segurança
         function getRadioValue(name) {
             const element = document.querySelector(`input[name="${name}"]:checked`);
             return element ? element.value : "Não selecionado";
         }
 
-        // Junta todos os dados exatamente como estão no seu modelo do EmailJS
-        const dadosTemplate = {
-            data_hora: document.getElementById('dataHora').value,
-            responsavel: document.getElementById('responsavel').value,
-            tipo_veiculo: document.getElementById('tipoVeiculo').value,
-            placa: document.getElementById('placa').value,
-            km: document.getElementById('km').value,
-            
-            g1_cinto: getRadioValue('g1_cinto'),
-            g1_triangulo: getRadioValue('g1_triangulo'),
-            g1_extintor: getRadioValue('g1_extintor'),
-            g1_retrovisores: getRadioValue('g1_retrovisores'),
-            
-            g2_oleo: getRadioValue('g2_oleo'),
-            g2_freio: getRadioValue('g2_freio'),
-            g2_agua: getRadioValue('g2_agua'),
-            g2_vazamentos: getRadioValue('g2_vazamentos'),
-            
-            g3_calibragem: getRadioValue('g3_calibragem'),
-            g3_twi: getRadioValue('g3_twi'),
-            g3_desgaste: getRadioValue('g3_desgaste'),
-            g3_rodas: getRadioValue('g3_rodas'),
-            
-            g4_farois: getRadioValue('g4_farois'),
-            g4_luzes_freio: getRadioValue('g4_luzes_freio'),
-            g4_painel: getRadioValue('g4_painel'),
-            g4_bateria: getRadioValue('g4_bateria'),
-            g4_buzina: getRadioValue('g4_buzina'),
-            
-            g5_carroceria: getRadioValue('g5_carroceria'),
-            g6_limpeza: getRadioValue('g6_limpeza'),
-            
-            observacoes: document.getElementById('observacoes').value || "Nenhuma observação registrada."
-        };
+        // Mapeamento de todas as respostas dos inputs de radio
+        const camposRadio = [
+            'g1_cinto', 'g1_triangulo', 'g1_extintor', 'g1_retrovisores',
+            'g2_oleo', 'g2_freio', 'g2_agua', 'g2_vazamentos',
+            'g3_calibragem', 'g3_twi', 'g3_desgaste', 'g3_rodas',
+            'g4_farois', 'g4_luzes_freio', 'g4_painel', 'g4_bateria', 'g4_buzina',
+            'g5_carroceria', 'g6_limpeza'
+        ];
 
-        // Dispara o e-mail usando o EmailJS
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, dadosTemplate)
-            .then(function() {
-                alert('Checklist enviado com sucesso! Sistema SIM atualizado.');
-                document.getElementById('checklistForm').reset(); // Limpa para a próxima vistoria
-                atualizarDataHora(); // Gera uma nova hora automática
-            }, function(error) {
-                alert('Ocorreu um erro ao enviar para o EmailJS. Verifique sua conexão ou limite de envios.');
-                console.error('Erro detalhado:', error);
-            })
-            .finally(function() {
-                btn.disabled = false;
-                btn.innerText = "Salvar Checklist";
-            });
+        // Varre as respostas para descobrir se o veículo tem alguma falha
+        let temAnomalia = false;
+        camposRadio.forEach(campo => {
+            if (getRadioValue(campo) === "Com anomalia") {
+                temAnomalia = true;
+            }
+        });
+
+        // Coleta os dados bases do formulário
+        const dataHora = document.getElementById('dataHora').value;
+        const responsavel = document.getElementById('responsavel').value;
+        const tipoVeiculo = document.getElementById('tipoVeiculo').value;
+        const placa = document.getElementById('placa').value;
+        const km = parseInt(document.getElementById('km').value) || 0;
+        const obs = document.getElementById('observacoes').value || "Nenhuma observação registrada.";
+
+        try {
+            // Lógica Operacional Automatizada no Banco de Dados
+            if (temAnomalia) {
+                // Gerador automático de talão simples (Ex: 260609-123)
+                const d = new Date();
+                const codigoTalao = `${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}-${Math.floor(100 + Math.random() * 900)}`;
+
+                // Grava na gaveta de TRIAGEM/OFICINA
+                const { error: errTriagem } = await _supabase
+                    .from('inspecoes_triagem')
+                    .insert([{
+                        talao: codigoTalao,
+                        data_hora: dataHora,
+                        placa: placa,
+                        tipo_veiculo: tipoVeiculo,
+                        km_atual: km,
+                        responsavel: responsavel,
+                        status_atual: 'Alerta Anomalia',
+                        observacoes: obs
+                    }]);
+
+                if (errTriagem) throw errTriagem;
+            } else {
+                // Grava na gaveta de VEÍCULOS OK
+                const { error: errOk } = await _supabase
+                    .from('checklists_ok')
+                    .insert([{
+                        data_hora: dataHora,
+                        placa: placa,
+                        tipo_veiculo: tipoVeiculo,
+                        km_atual: km,
+                        responsavel: responsavel,
+                        status: '100% OK'
+                    }]);
+
+                if (errOk) throw errOk;
+            }
+
+            // Mantém o envio original de segurança por e-mail via EmailJS
+            const dadosTemplate = {
+                data_hora: dataHora, responsavel: responsavel, tipo_veiculo: tipoVeiculo, placa: placa, km: km,
+                g1_cinto: getRadioValue('g1_cinto'), g1_triangulo: getRadioValue('g1_triangulo'), g1_extintor: getRadioValue('g1_extintor'), g1_retrovisores: getRadioValue('g1_retrovisores'),
+                g2_oleo: getRadioValue('g2_oleo'), g2_freio: getRadioValue('g2_freio'), g2_agua: getRadioValue('g2_agua'), g2_vazamentos: getRadioValue('g2_vazamentos'),
+                g3_calibragem: getRadioValue('g3_calibragem'), g3_twi: getRadioValue('g3_twi'), g3_desgaste: getRadioValue('g3_desgaste'), g3_rodas: getRadioValue('g3_rodas'),
+                g4_farois: getRadioValue('g4_farois'), g4_luzes_freio: getRadioValue('g4_luzes_freio'), g4_painel: getRadioValue('g4_painel'), g4_bateria: getRadioValue('g4_bateria'), g4_buzina: getRadioValue('g4_buzina'),
+                g5_carroceria: getRadioValue('g5_carroceria'), g6_limpeza: getRadioValue('g6_limpeza'), observacoes: obs
+            };
+
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, dadosTemplate);
+
+            alert('Checklist salvo e sincronizado com o Banco de Dados SIM com sucesso!');
+            document.getElementById('checklistForm').reset();
+            atualizarDataHora();
+            carregarPlacasDoBanco();
+
+        } catch (error) {
+            alert('Falha crítica ao salvar no banco. Verifique sua estrutura no Supabase.');
+            console.error('Erro detalhado:', error);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Salvar Checklist";
+        }
     });
 </script>
-
 </body>
 </html>
