@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM - Sistema Integrado de Manutenção</title>
+    <!-- Script Oficial do EmailJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- Script Oficial do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #0f172a;
@@ -249,6 +252,7 @@
     </header>
 
     <form id="checklistForm">
+        <!-- Dados Iniciais -->
         <div class="grid-inputs">
             <div class="form-group">
                 <label for="dataHora">Data e Hora</label>
@@ -258,4 +262,377 @@
                 <label for="responsavel">Responsável pelo Checklist</label>
                 <input type="text" id="responsavel" required placeholder="Nome completo">
             </div>
-            <div class="form-
+            <!-- SELEÇÃO DA PLACA BUSCADA NO SUPABASE -->
+            <div class="form-group">
+                <label for="placa">Placa do Veículo</label>
+                <select id="placa" required onchange="vincularTipoVeiculoAutomatico(this.value)">
+                    <option value="" disabled selected>Carregando veículos da frota...</option>
+                </select>
+            </div>
+            <!-- TIPO DE VEÍCULO FICA READONLY (PREENCHIDO SOZINHO PELO SISTEMA) -->
+            <div class="form-group">
+                <label for="tipoVeiculo">Tipo de Veículo</label>
+                <input type="text" id="tipoVeiculo" readonly placeholder="Selecione a placa acima">
+            </div>
+            <div class="form-group">
+                <label for="km">KM Atual</label>
+                <input type="number" id="km" required placeholder="000000">
+            </div>
+        </div>
+
+        <!-- GRUPO 1 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 1: Segurança e Equipamentos Obrigatórios</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Cinto de segurança (travamento e conservação)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_cinto" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_cinto" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_cinto" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Triângulo de sinalização e chave de roda</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_triangulo" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_triangulo" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_triangulo" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Extintor de incêndio (dentro da validade)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_extintor" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_extintor" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_extintor" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado dos espelhos retrovisores</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g1_retrovisores" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g1_retrovisores" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g1_retrovisores" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUPO 2 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 2: Mecânica e Fluidos (Compartimento do Motor)</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Nível do óleo do motor</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_oleo" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_oleo" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_oleo" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Nível do fluido de freio</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_freio" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_freio" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_freio" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Nível do reservatório de água do radiador e limpador</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_agua" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_agua" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_agua" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Verificação de vazamentos visíveis (óleo, água ou combustível)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g2_vazamentos" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g2_vazamentos" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g2_vazamentos" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUPO 3 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 3: Pneus e Rodagem</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Calibragem (incluindo o estepe)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_calibragem" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_calibragem" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_calibragem" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado gerais da banda de rodagem e sulcos (TWI)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_twi" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_twi" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_twi" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Presença de bolhas, cortes ou desgaste irregular</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_desgaste" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_desgaste" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_desgaste" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Estado das rodas e aperto das porcas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g3_rodas" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g3_rodas" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g3_rodas" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUPO 4 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 4: Parte Elétrica e Iluminação</div>
+            
+            <div class="checklist-item">
+                <div class="item-text">Faróis (alto, baixo) e lanternas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_farois" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_farois" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_farois" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Luzes de freio, ré e piscas</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_luzes_freio" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_luzes_freio" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_luzes_freio" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Luz de placa e painel de instrumentos</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_painel" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_painel" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_painel" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Bateria (terminais limpos e sem oxidação)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_bateria" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_bateria" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_bateria" value="N/A">N/A</label>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <div class="item-text">Buzina</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g4_buzina" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g4_buzina" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g4_buzina" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUPO 5 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 5: Carroceria</div>
+            <div class="checklist-item">
+                <div class="item-text">Estado geral da carroceria (lataria, portas e trincas)</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g5_carroceria" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g5_carroceria" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g5_carroceria" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRUPO 6 -->
+        <div class="group-section">
+            <div class="group-title">Grupo 6: Limpeza e Conservação</div>
+            <div class="checklist-item">
+                <div class="item-text">Estado de limpeza interno e externo do veículo</div>
+                <div class="options-group">
+                    <label class="radio-label radio-label-ok"><input type="radio" name="g6_limpeza" value="OK" required>OK</label>
+                    <label class="radio-label radio-label-anomalia"><input type="radio" name="g6_limpeza" value="Com anomalia">Anomalia</label>
+                    <label class="radio-label radio-label-na"><input type="radio" name="g6_limpeza" value="N/A">N/A</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="form-group obs-section">
+            <label for="observacoes">Observações e Anomalias Encontradas</label>
+            <textarea id="observacoes" placeholder="Caso tenha marcado 'Anomalia' em algum item, detalhe aqui..."></textarea>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit">Salvar Checklist</button>
+    </form>
+</div>
+
+<script>
+    // CONFIGURAÇÕES GLOBAIS DOS CONECTORES
+    const SUPABASE_URL = "https://zsxjzmabzpjlzvqmpwzg.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeGp6bWFienBqbHp2cW1wd3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDYzMTEsImV4cCI6MjA5NjYyMjMxMX0.L3o-4gTWhClPyojC5lbLBY1A-pAl2VKeNxDe8C0y_9k";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const EMAILJS_SERVICE_ID = "service_gcwiji6";
+    const EMAILJS_TEMPLATE_ID = "template_eyo76or";
+    const EMAILJS_PUBLIC_KEY = "RMe_RZEGLZvY-YNYb";
+
+    let dadosVeiculosLocais = []; // Guarda a frota baixada do banco
+
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+    function atualizarDataHora() {
+        const agora = new Date();
+        const data = agora.toLocaleDateString('pt-BR');
+        const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('dataHora').value = `${data} - ${hora}`;
+    }
+
+    // BUSCA A FROTA DO BANCO ASSIM QUE O CELULAR ABRE O APP
+    async function carregarPlacasDoSupabase() {
+        try {
+            const { data, error } = await _supabase.from('veiculos').select('*').order('placa');
+            if(error) throw error;
+
+            const selectPlaca = document.getElementById('placa');
+            selectPlaca.innerHTML = '<option value="" disabled selected>Escolha a Placa...</option>';
+            
+            if(data && data.length > 0) {
+                dadosVeiculosLocais = data;
+                data.forEach(v => {
+                    selectPlaca.innerHTML += `<option value="${v.placa}">${v.placa} [${v.marca} ${v.modelo}]</option>`;
+                });
+            } else {
+                selectPlaca.innerHTML = '<option value="" disabled selected>Erro: Nenhuma placa cadastrada no painel!</option>';
+            }
+        } catch(e) {
+            console.error(e);
+            document.getElementById('placa').innerHTML = '<option value="" disabled selected>Erro ao carregar placas do banco</option>';
+        }
+    }
+
+    // DESCOBRE O TIPO DO VEÍCULO SOZINHO AO CLICAR NA PLACA
+    function vincularTipoVeiculoAutomatico(placaSelecionada) {
+        const veiculo = dadosVeiculosLocais.find(v => v.placa === placaSelecionada);
+        if(veiculo) {
+            document.getElementById('tipoVeiculo').value = veiculo.tipo_veiculo;
+        }
+    }
+
+    window.onload = function() {
+        atualizarDataHora();
+        carregarPlacasDoSupabase();
+    };
+
+    // ENVIO INTELIGENTE: EMAILJS + BANCO DE DADOS
+    document.getElementById('checklistForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        function getRadioValue(name) {
+            const element = document.querySelector(`input[name="${name}"]:checked`);
+            return element ? element.value : "N/A";
+        }
+
+        // Checa se o motorista relatou alguma Anomalia em qualquer um dos botões
+        const botoesRadio = document.querySelectorAll('input[type="radio"]:checked');
+        let temAnomalia = false;
+        botoesRadio.forEach(r => { if(r.value === 'Com anomalia') temAnomalia = true; });
+
+        const dadosTemplate = {
+            data_hora: document.getElementById('dataHora').value,
+            responsavel: document.getElementById('responsavel').value,
+            tipo_veiculo: document.getElementById('tipoVeiculo').value,
+            placa: document.getElementById('placa').value,
+            km: document.getElementById('km').value,
+            g1_cinto: getRadioValue('g1_cinto'),
+            g1_triangulo: getRadioValue('g1_triangulo'),
+            g1_extintor: getRadioValue('g1_extintor'),
+            g1_retrovisores: getRadioValue('g1_retrovisores'),
+            g2_oleo: getRadioValue('g2_oleo'),
+            g2_freio: getRadioValue('g2_freio'),
+            g2_agua: getRadioValue('g2_agua'),
+            g2_vazamentos: getRadioValue('g2_vazamentos'),
+            g3_calibragem: getRadioValue('g3_calibragem'),
+            g3_twi: getRadioValue('g3_twi'),
+            g3_desgaste: getRadioValue('g3_desgaste'),
+            g3_rodas: getRadioValue('g3_rodas'),
+            g4_farois: getRadioValue('g4_farois'),
+            g4_luzes_freio: getRadioValue('g4_luzes_freio'),
+            g4_painel: getRadioValue('g4_painel'),
+            g4_bateria: getRadioValue('g4_bateria'),
+            g4_buzina: getRadioValue('g4_buzina'),
+            g5_carroceria: getRadioValue('g5_carroceria'),
+            g6_limpeza: getRadioValue('g6_limpeza'),
+            observacoes: document.getElementById('observacoes').value || "Nenhuma observação registrada."
+        };
+
+        try {
+            // ROTA A: ENVIAR PARA A GAVETA DE TRIAGEM (SE HOUVER FALHAS)
+            if(temAnomalia) {
+                const numeroTalaoGerado = Math.floor(100000 + Math.random() * 900000); // Gera um talão aleatório
+                await _supabase.from('inspecoes_triagem').insert([{
+                    talao: numeroTalaoGerado,
+                    data_hora: dadosTemplate.data_hora,
+                    placa: dadosTemplate.placa,
+                    tipo_veiculo: dadosTemplate.tipo_veiculo,
+                    km_atual: parseInt(dadosTemplate.km),
+                    responsavel: dadosTemplate.responsavel,
+                    status_atual: "Alerta Anomalia",
+                    observacoes: dadosTemplate.observacoes
+                }]);
+            } else {
+                // ROTA B: ENVIAR PARA A GAVETA DE VEÍCULOS OK
+                await _supabase.from('checklists_ok').insert([{
+                    data_hora: dadosTemplate.data_hora,
+                    placa: dadosTemplate.placa,
+                    tipo_veiculo: dadosTemplate.tipo_veiculo,
+                    km_atual: parseInt(dadosTemplate.km),
+                    responsavel: dadosTemplate.responsavel,
+                    status: "Em Atividade"
+                }]);
+            }
+
+            // ENVIAR O EMAIL ORIGINAL DO EMAILJS DE PARALELO
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, dadosTemplate);
+            
+            alert('✅ Checklist gravado no banco de dados e enviado por e-mail com sucesso!');
+            document.getElementById('checklistForm').reset();
+            atualizarDataHora();
+            carregarPlacasDoSupabase(); // Recarrega a lista
+        } catch(error) {
+            alert('Falha ao processar o checklist. Verifique a conexão.');
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Salvar Checklist";
+        }
+    });
+</script>
+</body>
+</html>
